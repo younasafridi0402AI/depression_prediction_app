@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Student Depression Prediction
+    </title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', path='style.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h1>Student Depression Prediction</h1>
+
+        <p class="subtitle">
+            Random Forest Machine Learning Model
+        </p>
+
+
+        <form id="predictionForm">
+
+            <!-- Gender -->
+
+            <label>Gender</label>
+
+            <select id="Gender" required>
+
+                <option value="">Select Gender</option>
+
+                <option value="Male">Male</option>
+
+                <option value="Female">Female</option>
+
+            </select>
+
+
+            <!-- Age -->
+
+            <label>Age</label>
+
+            <input
+                type="number"
+                id="Age"
+                min="10"
+                max="100"
+                step="1"
+                required
+            >
+
+
+            <!-- City -->
+
+            <label>City</label>
+
+            <input
+                type="text"
+                id="City"
+                placeholder="Enter city"
+                required
+            >
+
+
+            <!-- Profession -->
+
+            <label>Profession</label>
+
+            <select id="Profession" required>
+
+                <option value="">Select Profession</option>
+
+                <option>Student</option>
+                <option>Civil Engineer</option>
+                <option>Architect</option>
+                <option>UX/UI Designer</option>
+                <option>Digital Marketer</option>
+                <option>Content Writer</option>
+                <option>Educational Consultant</option>
+                <option>Teacher</option>
+                <option>Manager</option>
+                <option>Chef</option>
+                <option>Doctor</option>
+                <option>Lawyer</option>
+                <option>Entrepreneur</option>
+                <option>Pharmacist</option>
+
+            </select>
+
+
+            <!-- Academic Pressure -->
+
+            <label>Academic Pressure</label>
+
+            <input
+                type="number"
+                id="Academic_Pressure"
+                min="0"
+                max="5"
+                step="1"
+                required
+            >
+
+
+            <!-- Work Pressure -->
+
+            <label>Work Pressure</label>
+
+            <input
+                type="number"
+                id="Work_Pressure"
+                min="0"
+                max="5"
+                step="1"
+                required
+            >
+
+
+            <!-- CGPA -->
+
+            <label>CGPA</label>
+
+            <input
+                type="number"
+                id="CGPA"
+                min="0"
+                max="10"
+                step="0.01"
+                required
+            >
+
+
+            <!-- Study Satisfaction -->
+
+            <label>Study Satisfaction</label>
+
+            <input
+                type="number"
+                id="Study_Satisfaction"
+                min="0"
+                max="5"
+                step="1"
+                required
+            >
+
+
+            <!-- Job Satisfaction -->
+
+            <label>Job Satisfaction</label>
+
+            <input
+                type="number"
+                id="Job_Satisfaction"
+                min="0"
+                max="5"
+                step="1"
+                required
+            >
+
+
+            <!-- Sleep Duration -->
+
+            <label>Sleep Duration</label>
+
+            <select id="Sleep_Duration" required>
+
+                <option value="">
+                    Select Sleep Duration
+                </option>
+
+                <option value="Less than 5 hours">
+                    Less than 5 hours
+                </option>
+
+                <option value="5-6 hours">
+                    5-6 hours
+                </option>
+
+                <option value="7-8 hours">
+                    7-8 hours
+                </option>
+
+                <option value="More than 8 hours">
+                    More than 8 hours
+                </option>
+
+                <option value="Others">
+                    Others
+                </option>
+
+            </select>
+
+
+            <!-- Dietary Habits -->
+
+            <label>Dietary Habits</label>
+
+            <select id="Dietary_Habits" required>
+
+                <option value="">
+                    Select Dietary Habits
+                </option>
+
+                <option value="Healthy">
+                    Healthy
+                </option>
+
+                <option value="Moderate">
+                    Moderate
+                </option>
+
+                <option value="Unhealthy">
+                    Unhealthy
+                </option>
+
+                <option value="Others">
+                    Others
+                </option>
+
+            </select>
+
+
+            <!-- Degree -->
+
+            <label>Degree</label>
+
+            <select id="Degree" required>
+
+                <option value="">Select Degree</option>
+
+                <option>B.Pharm</option>
+                <option>BSc</option>
+                <option>BA</option>
+                <option>BCA</option>
+                <option>M.Tech</option>
+                <option>PhD</option>
+                <option>Class 12</option>
+                <option>B.Ed</option>
+                <option>LLB</option>
+                <option>BE</option>
+                <option>M.Ed</option>
+                <option>MSc</option>
+                <option>BHM</option>
+                <option>M.Pharm</option>
+                <option>MCA</option>
+                <option>MA</option>
+                <option>B.Com</option>
+                <option>MD</option>
+                <option>MBA</option>
+                <option>MBBS</option>
+                <option>M.Com</option>
+                <option>B.Arch</option>
+                <option>LLM</option>
+                <option>B.Tech</option>
+                <option>BBA</option>
+                <option>ME</option>
+                <option>MHM</option>
+                <option>Others</option>
+
+            </select>
+
+
+            <!-- Suicidal Thoughts -->
+
+            <label>
+                Have you ever had suicidal thoughts?
+            </label>
+
+            <select
+                id="Suicidal_Thoughts"
+                required
+            >
+
+                <option value="">
+                    Select Answer
+                </option>
+
+                <option value="Yes">Yes</option>
+
+                <option value="No">No</option>
+
+            </select>
+
+
+            <!-- Work Study Hours -->
+
+            <label>Work/Study Hours</label>
+
+            <input
+                type="number"
+                id="Work_Study_Hours"
+                min="0"
+                max="24"
+                step="1"
+                required
+            >
+
+
+            <!-- Financial Stress -->
+
+            <label>Financial Stress</label>
+
+            <input
+                type="number"
+                id="Financial_Stress"
+                min="0"
+                max="5"
+                step="1"
+                required
+            >
+
+
+            <!-- Family History -->
+
+            <label>
+                Family History of Mental Illness
+            </label>
+
+            <select
+                id="Family_History"
+                required
+            >
+
+                <option value="">
+                    Select Answer
+                </option>
+
+                <option value="Yes">Yes</option>
+
+                <option value="No">No</option>
+
+            </select>
+
+
+            <!-- Button -->
+
+            <button type="submit">
+
+                Predict Depression
+
+            </button>
+
+        </form>
+
+
+        <!-- Loading -->
+
+        <div
+            id="loading"
+            class="loading"
+            style="display:none;"
+        >
+
+            Predicting...
+
+        </div>
+
+
+        <!-- Result -->
+
+        <div
+            id="result"
+            class="result"
+            style="display:none;"
+        >
+
+            <h2 id="resultTitle"></h2>
+
+            <p id="resultText"></p>
+
+            <div class="probability">
+
+                <p>
+                    Depression Probability:
+                    <strong id="depressionProbability">
+                    </strong>%
+                </p>
+
+                <p>
+                    No Depression Probability:
+                    <strong id="noDepressionProbability">
+                    </strong>%
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script
+    src="{{ url_for('static', path='script.js') }}">
+</script>
+
+</body>
+
+</html>
