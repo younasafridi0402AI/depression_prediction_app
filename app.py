@@ -1,8 +1,8 @@
-from fastapi import FastAPI, Request,Form
-from fastapi.responses import HTMLResponse, JSONResponse
+```python
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
 
 import pandas as pd
 import joblib
@@ -18,11 +18,10 @@ app = FastAPI(
     description="Random Forest Student Depression Prediction",
     version="1.0.0"
 )
-app.mount("/static",StaticFiles(directory = "static"),name = "static")
-templates = Jinja2Templates(directory = "templates")
+
 
 # ============================================================
-# PATHS
+# BASE DIRECTORY
 # ============================================================
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -42,55 +41,19 @@ STATIC_DIR = os.path.join(
     "static"
 )
 
-@app.get("/",response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse(
-    request=request,
-    name="index.html"
-)
-#form dabane pe result aye ga
-@app.post("/predict",response_class=HTMLResponse)
-async def predict_form(
-    request: Request,
-    Gender: str = Form(...),Age: int = Form(...),City: str = Form(...),
-    Profession: str = Form(...), Academic_Pressure: float = Form(...),
-    Work_pressure: float = Form(...), CGPA: float = Form(...),
-    Study_Satisfaction: float = Form(...), Job_Satisfaction: float = Form(...),
-    Sleep_Duration: str = Form(...), Dietary_Habits: str = Form(...),
-    Degree: str = Form(...),Suicidal_Thoughts: str = Form(...),
-    Work_Study_Hours: float = Form(...),Financial_Stress: float = Form(...),
-    Family_History: str = Form(...)
-):
-    input_data = {
-        "Gender": Gender, "Age": Age, "City": City, "Profession": Profession, 
-        "Academic Pressure": Academic_Pressure, "Work pressure": Work_pressure,
-        "CGPA":CGPA, "Study Satisfaction":Study_Satisfaction, "Job Satisfaction":Job_Satisfaction,
-        "Sleep Duration":Sleep_Duration, "Dietary Habits": Dietary_Habits, "Degree":Degree,
-        "Have you ever had suicidal thoughts?": Suicidal_Thoughts,
-        "Work/Study Hours": Work_Study_Hours, "Financial Stress": Financial_Stress,
-        "Family History of Mental Illness": Family_History
-    }
-    df = pd.DataFrame([input_data])
-    prediction = model.ptedict(df)[0]
-    probability = model.predict_proba(df)[0]
-    depression_probability = round(probability[1]*100,2)
-    result = "Depressed" if prediction == 1 else "not Depressed"
-    return templates.TemplateResponse("index.html",{"request":request, "result":result,"probability":depression_probability})
 
 # ============================================================
-# LOAD MODEL
-# ============================================================
-
-model = joblib.load(MODEL_PATH)
-
-
-# ============================================================
-# TEMPLATES AND STATIC
+# TEMPLATES
 # ============================================================
 
 templates = Jinja2Templates(
     directory=TEMPLATES_DIR
 )
+
+
+# ============================================================
+# STATIC FILES
+# ============================================================
 
 app.mount(
     "/static",
@@ -100,32 +63,10 @@ app.mount(
 
 
 # ============================================================
-# PREDICTION INPUT MODEL
+# LOAD MODEL
 # ============================================================
 
-class PredictionInput(BaseModel):
-    Gender: str
-    Age: float
-    City: str
-    Profession: str
-
-    Academic_Pressure: float
-    Work_Pressure: float
-    CGPA: float
-
-    Study_Satisfaction: float
-    Job_Satisfaction: float
-
-    Sleep_Duration: str
-    Dietary_Habits: str
-    Degree: str
-
-    Suicidal_Thoughts: str
-
-    Work_Study_Hours: float
-    Financial_Stress: float
-
-    Family_History: str
+model = joblib.load(MODEL_PATH)
 
 
 # ============================================================
@@ -143,102 +84,106 @@ async def home(request: Request):
 
 
 # ============================================================
-# PREDICTION API
+# PREDICTION FORM
 # ============================================================
 
-@app.post("/predict")
-async def predict(data: PredictionInput):
+@app.post("/predict", response_class=HTMLResponse)
+async def predict_form(
+    request: Request,
+
+    Gender: str = Form(...),
+    Age: int = Form(...),
+    City: str = Form(...),
+    Profession: str = Form(...),
+
+    Academic_Pressure: float = Form(...),
+    Work_pressure: float = Form(...),
+    CGPA: float = Form(...),
+
+    Study_Satisfaction: float = Form(...),
+    Job_Satisfaction: float = Form(...),
+
+    Sleep_Duration: str = Form(...),
+    Dietary_Habits: str = Form(...),
+    Degree: str = Form(...),
+
+    Suicidal_Thoughts: str = Form(...),
+
+    Work_Study_Hours: float = Form(...),
+    Financial_Stress: float = Form(...),
+
+    Family_History: str = Form(...)
+):
 
     try:
 
         # ----------------------------------------------------
-        # Convert received data into model input
+        # CREATE INPUT DATA
         # ----------------------------------------------------
 
         input_data = {
-            "Gender": data.Gender,
-            "Age": float(data.Age),
-            "City": data.City,
-            "Profession": data.Profession,
+            "Gender": Gender,
+            "Age": Age,
+            "City": City,
+            "Profession": Profession,
 
-            "Academic Pressure": float(
-                data.Academic_Pressure
-            ),
+            "Academic Pressure": Academic_Pressure,
+            "Work pressure": Work_pressure,
 
-            "Work Pressure": float(
-                data.Work_Pressure
-            ),
+            "CGPA": CGPA,
 
-            "CGPA": float(
-                data.CGPA
-            ),
+            "Study Satisfaction": Study_Satisfaction,
+            "Job Satisfaction": Job_Satisfaction,
 
-            "Study Satisfaction": float(
-                data.Study_Satisfaction
-            ),
+            "Sleep Duration": Sleep_Duration,
+            "Dietary Habits": Dietary_Habits,
+            "Degree": Degree,
 
-            "Job Satisfaction": float(
-                data.Job_Satisfaction
-            ),
+            "Have you ever had suicidal thoughts?":
+                Suicidal_Thoughts,
 
-            "Sleep Duration": data.Sleep_Duration,
-            "Dietary Habits": data.Dietary_Habits,
-            "Degree": data.Degree,
+            "Work/Study Hours": Work_Study_Hours,
 
-            "Have you ever had suicidal thoughts ?":
-                data.Suicidal_Thoughts,
-
-            "Work/Study Hours": float(
-                data.Work_Study_Hours
-            ),
-
-            "Financial Stress": float(
-                data.Financial_Stress
-            ),
+            "Financial Stress": Financial_Stress,
 
             "Family History of Mental Illness":
-                data.Family_History
+                Family_History
         }
 
 
         # ----------------------------------------------------
-        # Create DataFrame
+        # DATAFRAME
         # ----------------------------------------------------
 
-        input_df = pd.DataFrame(
-            [input_data]
+        df = pd.DataFrame([input_data])
+
+
+        # ----------------------------------------------------
+        # PREDICTION
+        # ----------------------------------------------------
+
+        prediction = model.predict(df)[0]
+
+
+        # ----------------------------------------------------
+        # PROBABILITY
+        # ----------------------------------------------------
+
+        probability = model.predict_proba(df)[0]
+
+        depression_probability = round(
+            float(probability[1]) * 100,
+            2
+        )
+
+        no_depression_probability = round(
+            float(probability[0]) * 100,
+            2
         )
 
 
         # ----------------------------------------------------
-        # Prediction
-        # ----------------------------------------------------
-
-        prediction = model.predict(
-            input_df
-        )[0]
-
-
-        # ----------------------------------------------------
-        # Probability
-        # ----------------------------------------------------
-
-        probability = model.predict_proba(
-            input_df
-        )[0]
-
-
-        depression_probability = (
-            probability[1] * 100
-        )
-
-        no_depression_probability = (
-            probability[0] * 100
-        )
-
-
-        # ----------------------------------------------------
-        # Result
+        # RESULT
         # ----------------------------------------------------
 
         if int(prediction) == 1:
@@ -251,38 +196,29 @@ async def predict(data: PredictionInput):
 
 
         # ----------------------------------------------------
-        # Return Result
+        # RETURN RESULT TO HTML
         # ----------------------------------------------------
 
-        return JSONResponse(
-            content={
-                "success": True,
-
-                "prediction": int(prediction),
-
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={
                 "result": result,
-
                 "depression_probability":
-                    round(
-                        depression_probability,
-                        2
-                    ),
-
+                    depression_probability,
                 "no_depression_probability":
-                    round(
-                        no_depression_probability,
-                        2
-                    )
+                    no_depression_probability
             }
         )
 
 
     except Exception as e:
 
-        return JSONResponse(
-            status_code=400,
-            content={
-                "success": False,
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={
+                "result": "Prediction Error",
                 "error": str(e)
             }
         )
@@ -299,3 +235,4 @@ async def health():
         "status": "healthy",
         "model_loaded": model is not None
     }
+```
