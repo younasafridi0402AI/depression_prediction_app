@@ -44,7 +44,10 @@ STATIC_DIR = os.path.join(
 
 @app.get("/",response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse(*"index.html",{"request":request})
+    return templates.TemplateResponse(
+    request=request,
+    name="index.html"
+)
 #form dabane pe result aye ga
 @app.post("/predict",response_class=HTMLResponse)
 async def predict_form(
