@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request,Form
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -18,7 +18,8 @@ app = FastAPI(
     description="Random Forest Student Depression Prediction",
     version="1.0.0"
 )
-
+app.mount("/static",StaticFiles(directory = "static"),name = "static")
+templates = Jinja2Templates(directory = "templates")
 
 # ============================================================
 # PATHS
@@ -40,7 +41,38 @@ STATIC_DIR = os.path.join(
     BASE_DIR,
     "static"
 )
-
+home page linke kolne pe form ayega
+@app.get("/",response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse(*"index.html",{"request":request})
+#form dabane pe result aye ga
+@app.post("/predict",response_class=HTMLResponse)
+async def predict_form(
+    request: Request,
+    Gender: str = Form(...),Age: int = Form(...),City: str = Form(...),
+    Profession: str = Form(...), Academic_Pressure: float = Form(...),
+    Work_pressure: float = Form(...), CGPA: float = Form(...),
+    Study_Satisfaction: float = Form(...), Job_Satisfaction: float = Form(...),
+    Sleep_Duration: str = Form(...), Dietary_Habits: str = Form(...),
+    Degree: str = Form(...),Suicidal_Thoughts: str = Form(...),
+    Work_Study_Hours: float = Form(...),Financial_Stress: float = Form(...),
+    Family_History: str = Form(...)
+):
+    input_data = {
+        "Gender": Gender, "Age": Age, "City": City, "Profession": Profession, 
+        "Academic Pressure": Academic_Pressure, "Work pressure": Work_pressure,
+        "CGPA":CGPA, "Study Satisfaction":Study_Satisfaction, "Job Satisfaction":Job_Satisfaction,
+        "Sleep Duration":Sleep_Duration, "Dietary Habits": Dietary_Habits, "Degree":Degree,
+        "Have you ever had suicidal thoughts?": Suicidal_Thoughts,
+        "Work/Study Hours": Work_Study_Hours, "Financial Stress": Financial_Stress,
+        "Family History of Mental Illness": Family_History
+    }
+    df = pd.DataFrame([input_data])
+    prediction = model.ptedict(df)[0]
+    probability = model.predict_proba(df)[0]
+    depression_probability = round(probability[1]*100,2)
+    result = "Depressed" if prediction == 1 else "not Depressed"
+    return templates.TemplateResponse("index.html",{"request":request, "result":result,"probability":depression_probability})
 
 # ============================================================
 # LOAD MODEL
