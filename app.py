@@ -41,7 +41,7 @@ STATIC_DIR = os.path.join(
     BASE_DIR,
     "static"
 )
-home page linke kolne pe form ayega
+
 @app.get("/",response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse(*"index.html",{"request":request})
