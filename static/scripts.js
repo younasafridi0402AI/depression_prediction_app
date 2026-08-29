@@ -1,4 +1,4 @@
-```javascript
+javascript
 document.addEventListener("DOMContentLoaded", function () {
 
     const form = document.getElementById("predictionForm");
@@ -150,4 +150,4 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
-```
+
