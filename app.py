@@ -1,8 +1,9 @@
 
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 import pandas as pd
 import joblib
@@ -10,18 +11,7 @@ import os
 
 
 # ============================================================
-# FASTAPI APP
-# ============================================================
-
-app = FastAPI(
-    title="Student Depression Prediction API",
-    description="Random Forest Student Depression Prediction",
-    version="1.0.0"
-)
-
-
-# ============================================================
-# BASE DIRECTORY
+# PATHS
 # ============================================================
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -43,6 +33,17 @@ STATIC_DIR = os.path.join(
 
 
 # ============================================================
+# FASTAPI
+# ============================================================
+
+app = FastAPI(
+    title="Student Depression Prediction API",
+    description="Random Forest Student Depression Prediction",
+    version="1.0.0"
+)
+
+
+# ============================================================
 # TEMPLATES
 # ============================================================
 
@@ -52,7 +53,7 @@ templates = Jinja2Templates(
 
 
 # ============================================================
-# STATIC FILES
+# STATIC
 # ============================================================
 
 app.mount(
@@ -63,14 +64,75 @@ app.mount(
 
 
 # ============================================================
-# LOAD MODEL
+# LOAD MODEL BUNDLE
 # ============================================================
 
-model = joblib.load(MODEL_PATH)
+try:
+
+    bundle = joblib.load(MODEL_PATH)
+
+    print("MODEL LOADED SUCCESSFULLY")
+    print("MODEL TYPE:", type(bundle))
+
+    # Actual Random Forest
+    model = bundle["model"]
+
+    # Encoders
+    label_encoders = bundle["label_encoders"]
+
+    # Target encoder
+    target_encoder = bundle.get("target_encoder", None)
+
+    # Features used during training
+    features = bundle["features"]
+
+    print("FEATURES:", features)
+    print("LABEL ENCODERS:", label_encoders.keys())
+
+except Exception as e:
+
+    print("MODEL LOAD ERROR:", str(e))
+
+    bundle = None
+    model = None
+    label_encoders = {}
+    target_encoder = None
+    features = []
 
 
 # ============================================================
-# HOME PAGE
+# INPUT DATA
+# ============================================================
+
+class PredictionInput(BaseModel):
+
+    Gender: str
+    Age: float
+    City: str
+    Profession: str
+
+    Academic_Pressure: float
+    Work_Pressure: float
+
+    CGPA: float
+
+    Study_Satisfaction: float
+    Job_Satisfaction: float
+
+    Sleep_Duration: str
+    Dietary_Habits: str
+    Degree: str
+
+    Suicidal_Thoughts: str
+
+    Work_Study_Hours: float
+    Financial_Stress: float
+
+    Family_History: str
+
+
+# ============================================================
+# HOME
 # ============================================================
 
 @app.get("/", response_class=HTMLResponse)
@@ -78,147 +140,255 @@ async def home(request: Request):
 
     return templates.TemplateResponse(
         request=request,
-        name="index.html",
-        context={}
+        name="index.html"
     )
 
 
 # ============================================================
-# PREDICTION FORM
+# PREDICT
 # ============================================================
 
-@app.post("/predict", response_class=HTMLResponse)
-async def predict_form(
-    request: Request,
-
-    Gender: str = Form(...),
-    Age: int = Form(...),
-    City: str = Form(...),
-    Profession: str = Form(...),
-
-    Academic_Pressure: float = Form(...),
-    Work_pressure: float = Form(...),
-    CGPA: float = Form(...),
-
-    Study_Satisfaction: float = Form(...),
-    Job_Satisfaction: float = Form(...),
-
-    Sleep_Duration: str = Form(...),
-    Dietary_Habits: str = Form(...),
-    Degree: str = Form(...),
-
-    Suicidal_Thoughts: str = Form(...),
-
-    Work_Study_Hours: float = Form(...),
-    Financial_Stress: float = Form(...),
-
-    Family_History: str = Form(...)
-):
+@app.post("/predict")
+async def predict(data: PredictionInput):
 
     try:
 
-        # ----------------------------------------------------
-        # CREATE INPUT DATA
-        # ----------------------------------------------------
+        # --------------------------------------------------------
+        # CHECK MODEL
+        # --------------------------------------------------------
+
+        if model is None:
+
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "success": False,
+                    "error": "Model could not be loaded."
+                }
+            )
+
+
+        # --------------------------------------------------------
+        # CREATE DATA USING ONLY TRAINING FEATURES
+        # --------------------------------------------------------
 
         input_data = {
-            "Gender": Gender,
-            "Age": Age,
-            "City": City,
-            "Profession": Profession,
 
-            "Academic Pressure": Academic_Pressure,
-            "Work pressure": Work_pressure,
+            "Gender": data.Gender,
 
-            "CGPA": CGPA,
+            "Age": float(data.Age),
 
-            "Study Satisfaction": Study_Satisfaction,
-            "Job Satisfaction": Job_Satisfaction,
+            "Academic Pressure":
+                float(data.Academic_Pressure),
 
-            "Sleep Duration": Sleep_Duration,
-            "Dietary Habits": Dietary_Habits,
-            "Degree": Degree,
+            "Study Satisfaction":
+                float(data.Study_Satisfaction),
 
-            "Have you ever had suicidal thoughts?":
-                Suicidal_Thoughts,
+            "Sleep Duration":
+                data.Sleep_Duration,
 
-            "Work/Study Hours": Work_Study_Hours,
+            "Dietary Habits":
+                data.Dietary_Habits,
 
-            "Financial Stress": Financial_Stress,
+            "Have you ever had suicidal thoughts ?":
+                data.Suicidal_Thoughts,
+
+            "Study Hours":
+                float(data.Work_Study_Hours),
+
+            "Financial Stress":
+                float(data.Financial_Stress),
 
             "Family History of Mental Illness":
-                Family_History
+                data.Family_History
         }
 
 
-        # ----------------------------------------------------
+        # --------------------------------------------------------
         # DATAFRAME
-        # ----------------------------------------------------
+        # --------------------------------------------------------
 
         df = pd.DataFrame([input_data])
 
+        print("\n================================")
+        print("ORIGINAL INPUT")
+        print("================================")
+        print(df)
 
-        # ----------------------------------------------------
+
+        # --------------------------------------------------------
+        # APPLY LABEL ENCODERS
+        # --------------------------------------------------------
+
+        for column, encoder in label_encoders.items():
+
+            if column in df.columns:
+
+                value = df.loc[0, column]
+
+                try:
+
+                    df[column] = encoder.transform(
+                        df[column].astype(str)
+                    )
+
+                except Exception as e:
+
+                    return JSONResponse(
+                        status_code=400,
+                        content={
+                            "success": False,
+                            "error":
+                                f"Invalid value for {column}: {value}. "
+                                f"Model expects values used during training."
+                        }
+                    )
+
+
+        # --------------------------------------------------------
+        # MAKE SURE COLUMN ORDER IS EXACTLY THE SAME
+        # --------------------------------------------------------
+
+        df = df[features]
+
+
+        print("\n================================")
+        print("MODEL INPUT")
+        print("================================")
+        print(df)
+
+
+        # --------------------------------------------------------
         # PREDICTION
-        # ----------------------------------------------------
+        # --------------------------------------------------------
 
         prediction = model.predict(df)[0]
 
+        print("RAW PREDICTION:", prediction)
 
-        # ----------------------------------------------------
+
+        # --------------------------------------------------------
         # PROBABILITY
-        # ----------------------------------------------------
+        # --------------------------------------------------------
 
         probability = model.predict_proba(df)[0]
 
+        print("PROBABILITY:", probability)
+
+
+        # --------------------------------------------------------
+        # RESULT LABEL
+        # --------------------------------------------------------
+
+        if target_encoder is not None:
+
+            try:
+
+                decoded_prediction = target_encoder.inverse_transform(
+                    [prediction]
+                )[0]
+
+                result = str(decoded_prediction)
+
+            except Exception:
+
+                if int(prediction) == 1:
+                    result = "Depression Risk Detected"
+                else:
+                    result = "Low Depression Risk"
+
+        else:
+
+            if int(prediction) == 1:
+                result = "Depression Risk Detected"
+            else:
+                result = "Low Depression Risk"
+
+
+        # --------------------------------------------------------
+        # PROBABILITY VALUES
+        # --------------------------------------------------------
+
+        classes = list(model.classes_)
+
+        depression_probability = 0.0
+        no_depression_probability = 0.0
+
+        for i, class_value in enumerate(classes):
+
+            if str(class_value) == "1":
+                depression_probability = float(probability[i]) * 100
+
+            elif str(class_value) == "0":
+                no_depression_probability = float(probability[i]) * 100
+
+
         depression_probability = round(
-            float(probability[1]) * 100,
+            depression_probability,
             2
         )
 
         no_depression_probability = round(
-            float(probability[0]) * 100,
+            no_depression_probability,
             2
         )
 
 
-        # ----------------------------------------------------
-        # RESULT
-        # ----------------------------------------------------
+        print("\n================================")
+        print("RESULT")
+        print("================================")
+        print("Result:", result)
+        print(
+            "Depression:",
+            depression_probability,
+            "%"
+        )
+        print(
+            "No Depression:",
+            no_depression_probability,
+            "%"
+        )
 
-        if int(prediction) == 1:
 
-            result = "Depression Risk Detected"
+        # --------------------------------------------------------
+        # RETURN JSON
+        # --------------------------------------------------------
 
-        else:
+        return JSONResponse(
+            content={
 
-            result = "Low Depression Risk"
+                "success": True,
 
+                "prediction": int(prediction),
 
-        # ----------------------------------------------------
-        # RETURN RESULT TO HTML
-        # ----------------------------------------------------
-
-        return templates.TemplateResponse(
-            request=request,
-            name="index.html",
-            context={
                 "result": result,
+
                 "depression_probability":
                     depression_probability,
+
                 "no_depression_probability":
                     no_depression_probability
             }
         )
 
 
+    # ------------------------------------------------------------
+    # ERROR
+    # ------------------------------------------------------------
+
     except Exception as e:
 
-        return templates.TemplateResponse(
-            request=request,
-            name="index.html",
-            context={
-                "result": "Prediction Error",
+        print("\n================================")
+        print("PREDICTION ERROR")
+        print("================================")
+        print(str(e))
+
+        return JSONResponse(
+            status_code=400,
+            content={
+
+                "success": False,
+
                 "error": str(e)
             }
         )
@@ -232,7 +402,11 @@ async def predict_form(
 async def health():
 
     return {
+
         "status": "healthy",
-        "model_loaded": model is not None
+
+        "model_loaded": model is not None,
+
+        "features": features
     }
 
