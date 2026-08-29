@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 import pandas as pd
 import joblib
@@ -64,6 +65,35 @@ app.mount(
 
 
 # ============================================================
+# PREDICTION INPUT MODEL
+# ============================================================
+
+class PredictionInput(BaseModel):
+    Gender: str
+    Age: float
+    City: str
+    Profession: str
+
+    Academic_Pressure: float
+    Work_Pressure: float
+    CGPA: float
+
+    Study_Satisfaction: float
+    Job_Satisfaction: float
+
+    Sleep_Duration: str
+    Dietary_Habits: str
+    Degree: str
+
+    Suicidal_Thoughts: str
+
+    Work_Study_Hours: float
+    Financial_Stress: float
+
+    Family_History: str
+
+
+# ============================================================
 # HOME PAGE
 # ============================================================
 
@@ -75,61 +105,75 @@ async def home(request: Request):
         name="index.html",
         context={}
     )
+
+
 # ============================================================
 # PREDICTION API
 # ============================================================
 
 @app.post("/predict")
-async def predict(data: dict):
+async def predict(data: PredictionInput):
 
     try:
 
         # ----------------------------------------------------
-        # Convert received JSON into dataframe
+        # Convert received data into model input
         # ----------------------------------------------------
 
         input_data = {
-            "Gender": data["Gender"],
-            "Age": float(data["Age"]),
-            "City": data["City"],
-            "Profession": data["Profession"],
+            "Gender": data.Gender,
+            "Age": float(data.Age),
+            "City": data.City,
+            "Profession": data.Profession,
+
             "Academic Pressure": float(
-                data["Academic_Pressure"]
+                data.Academic_Pressure
             ),
+
             "Work Pressure": float(
-                data["Work_Pressure"]
+                data.Work_Pressure
             ),
+
             "CGPA": float(
-                data["CGPA"]
+                data.CGPA
             ),
+
             "Study Satisfaction": float(
-                data["Study_Satisfaction"]
+                data.Study_Satisfaction
             ),
+
             "Job Satisfaction": float(
-                data["Job_Satisfaction"]
+                data.Job_Satisfaction
             ),
-            "Sleep Duration": data["Sleep_Duration"],
-            "Dietary Habits": data["Dietary_Habits"],
-            "Degree": data["Degree"],
+
+            "Sleep Duration": data.Sleep_Duration,
+            "Dietary Habits": data.Dietary_Habits,
+            "Degree": data.Degree,
+
             "Have you ever had suicidal thoughts ?":
-                data["Suicidal_Thoughts"],
+                data.Suicidal_Thoughts,
+
             "Work/Study Hours": float(
-                data["Work_Study_Hours"]
+                data.Work_Study_Hours
             ),
+
             "Financial Stress": float(
-                data["Financial_Stress"]
+                data.Financial_Stress
             ),
+
             "Family History of Mental Illness":
-                data["Family_History"]
+                data.Family_History
         }
 
+
         # ----------------------------------------------------
-        # DataFrame
+        # Create DataFrame
         # ----------------------------------------------------
 
         input_df = pd.DataFrame(
             [input_data]
         )
+
 
         # ----------------------------------------------------
         # Prediction
@@ -139,6 +183,7 @@ async def predict(data: dict):
             input_df
         )[0]
 
+
         # ----------------------------------------------------
         # Probability
         # ----------------------------------------------------
@@ -147,6 +192,7 @@ async def predict(data: dict):
             input_df
         )[0]
 
+
         depression_probability = (
             probability[1] * 100
         )
@@ -154,6 +200,7 @@ async def predict(data: dict):
         no_depression_probability = (
             probability[0] * 100
         )
+
 
         # ----------------------------------------------------
         # Result
@@ -167,16 +214,25 @@ async def predict(data: dict):
 
             result = "Low Depression Risk"
 
+
+        # ----------------------------------------------------
+        # Return Result
+        # ----------------------------------------------------
+
         return JSONResponse(
             content={
                 "success": True,
+
                 "prediction": int(prediction),
+
                 "result": result,
+
                 "depression_probability":
                     round(
                         depression_probability,
                         2
                     ),
+
                 "no_depression_probability":
                     round(
                         no_depression_probability,
@@ -184,6 +240,7 @@ async def predict(data: dict):
                     )
             }
         )
+
 
     except Exception as e:
 
