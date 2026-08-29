@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,9 +9,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>
-        Student Depression Prediction
-    </title>
+    <title>Student Depression Prediction</title>
 
     <link rel="stylesheet"
           href="{{ url_for('static', path='style.css') }}">
@@ -29,25 +28,16 @@
             Random Forest Machine Learning Model
         </p>
 
-
         <form id="predictionForm">
-
-            <!-- Gender -->
 
             <label>Gender</label>
 
             <select id="Gender" required>
-
                 <option value="">Select Gender</option>
-
                 <option value="Male">Male</option>
-
                 <option value="Female">Female</option>
-
             </select>
 
-
-            <!-- Age -->
 
             <label>Age</label>
 
@@ -61,8 +51,6 @@
             >
 
 
-            <!-- City -->
-
             <label>City</label>
 
             <input
@@ -73,33 +61,29 @@
             >
 
 
-            <!-- Profession -->
-
             <label>Profession</label>
 
             <select id="Profession" required>
 
                 <option value="">Select Profession</option>
 
-                <option>Student</option>
-                <option>Civil Engineer</option>
-                <option>Architect</option>
-                <option>UX/UI Designer</option>
-                <option>Digital Marketer</option>
-                <option>Content Writer</option>
-                <option>Educational Consultant</option>
-                <option>Teacher</option>
-                <option>Manager</option>
-                <option>Chef</option>
-                <option>Doctor</option>
-                <option>Lawyer</option>
-                <option>Entrepreneur</option>
-                <option>Pharmacist</option>
+                <option value="Student">Student</option>
+                <option value="Civil Engineer">Civil Engineer</option>
+                <option value="Architect">Architect</option>
+                <option value="UX/UI Designer">UX/UI Designer</option>
+                <option value="Digital Marketer">Digital Marketer</option>
+                <option value="Content Writer">Content Writer</option>
+                <option value="Educational Consultant">Educational Consultant</option>
+                <option value="Teacher">Teacher</option>
+                <option value="Manager">Manager</option>
+                <option value="Chef">Chef</option>
+                <option value="Doctor">Doctor</option>
+                <option value="Lawyer">Lawyer</option>
+                <option value="Entrepreneur">Entrepreneur</option>
+                <option value="Pharmacist">Pharmacist</option>
 
             </select>
 
-
-            <!-- Academic Pressure -->
 
             <label>Academic Pressure</label>
 
@@ -113,8 +97,6 @@
             >
 
 
-            <!-- Work Pressure -->
-
             <label>Work Pressure</label>
 
             <input
@@ -126,8 +108,6 @@
                 required
             >
 
-
-            <!-- CGPA -->
 
             <label>CGPA</label>
 
@@ -141,8 +121,6 @@
             >
 
 
-            <!-- Study Satisfaction -->
-
             <label>Study Satisfaction</label>
 
             <input
@@ -154,8 +132,6 @@
                 required
             >
 
-
-            <!-- Job Satisfaction -->
 
             <label>Job Satisfaction</label>
 
@@ -169,15 +145,11 @@
             >
 
 
-            <!-- Sleep Duration -->
-
             <label>Sleep Duration</label>
 
             <select id="Sleep_Duration" required>
 
-                <option value="">
-                    Select Sleep Duration
-                </option>
+                <option value="">Select Sleep Duration</option>
 
                 <option value="Less than 5 hours">
                     Less than 5 hours
@@ -202,36 +174,19 @@
             </select>
 
 
-            <!-- Dietary Habits -->
-
             <label>Dietary Habits</label>
 
             <select id="Dietary_Habits" required>
 
-                <option value="">
-                    Select Dietary Habits
-                </option>
+                <option value="">Select Dietary Habits</option>
 
-                <option value="Healthy">
-                    Healthy
-                </option>
-
-                <option value="Moderate">
-                    Moderate
-                </option>
-
-                <option value="Unhealthy">
-                    Unhealthy
-                </option>
-
-                <option value="Others">
-                    Others
-                </option>
+                <option value="Healthy">Healthy</option>
+                <option value="Moderate">Moderate</option>
+                <option value="Unhealthy">Unhealthy</option>
+                <option value="Others">Others</option>
 
             </select>
 
-
-            <!-- Degree -->
 
             <label>Degree</label>
 
@@ -271,29 +226,18 @@
             </select>
 
 
-            <!-- Suicidal Thoughts -->
-
             <label>
                 Have you ever had suicidal thoughts?
             </label>
 
-            <select
-                id="Suicidal_Thoughts"
-                required
-            >
+            <select id="Suicidal_Thoughts" required>
 
-                <option value="">
-                    Select Answer
-                </option>
-
+                <option value="">Select Answer</option>
                 <option value="Yes">Yes</option>
-
                 <option value="No">No</option>
 
             </select>
 
-
-            <!-- Work Study Hours -->
 
             <label>Work/Study Hours</label>
 
@@ -307,8 +251,6 @@
             >
 
 
-            <!-- Financial Stress -->
-
             <label>Financial Stress</label>
 
             <input
@@ -321,53 +263,34 @@
             >
 
 
-            <!-- Family History -->
-
             <label>
                 Family History of Mental Illness
             </label>
 
-            <select
-                id="Family_History"
-                required
-            >
+            <select id="Family_History" required>
 
-                <option value="">
-                    Select Answer
-                </option>
-
+                <option value="">Select Answer</option>
                 <option value="Yes">Yes</option>
-
                 <option value="No">No</option>
 
             </select>
 
 
-            <!-- Button -->
-
             <button type="submit">
-
                 Predict Depression
-
             </button>
 
         </form>
 
-
-        <!-- Loading -->
 
         <div
             id="loading"
             class="loading"
             style="display:none;"
         >
-
             Predicting...
-
         </div>
 
-
-        <!-- Result -->
 
         <div
             id="result"
@@ -383,14 +306,12 @@
 
                 <p>
                     Depression Probability:
-                    <strong id="depressionProbability">
-                    </strong>%
+                    <strong id="depressionProbability"></strong>
                 </p>
 
                 <p>
                     No Depression Probability:
-                    <strong id="noDepressionProbability">
-                    </strong>%
+                    <strong id="noDepressionProbability"></strong>
                 </p>
 
             </div>
@@ -402,10 +323,9 @@
 </div>
 
 
-<script
-    src="{{ url_for('static', path='script.js') }}">
-</script>
+<script src="{{ url_for('static', path='script.js') }}"></script>
 
 </body>
 
 </html>
+```
