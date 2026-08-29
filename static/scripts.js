@@ -1,33 +1,44 @@
-javascript
+
 document.addEventListener("DOMContentLoaded", function () {
 
     const form = document.getElementById("predictionForm");
+
     const loading = document.getElementById("loading");
+
     const result = document.getElementById("result");
 
+
     if (!form) {
-        console.error("predictionForm not found.");
+
+        console.error("predictionForm not found");
+
         return;
     }
+
 
     form.addEventListener("submit", async function (event) {
 
         event.preventDefault();
 
-        // Show loading
-        if (loading) {
-            loading.style.display = "block";
-        }
 
-        if (result) {
-            result.style.display = "none";
-        }
+        console.log("PREDICT BUTTON CLICKED");
 
-        // Get form values
+
+        loading.style.display = "block";
+
+        result.style.display = "none";
+
+
         const data = {
+
             Gender: document.getElementById("Gender").value,
-            Age: parseFloat(document.getElementById("Age").value),
+
+            Age: parseFloat(
+                document.getElementById("Age").value
+            ),
+
             City: document.getElementById("City").value,
+
             Profession: document.getElementById("Profession").value,
 
             Academic_Pressure: parseFloat(
@@ -74,11 +85,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("Family_History").value
         };
 
-        console.log("Sending data:", data);
+
+        console.log("SENDING DATA:", data);
+
 
         try {
 
             const response = await fetch("/predict", {
+
                 method: "POST",
 
                 headers: {
@@ -88,63 +102,67 @@ document.addEventListener("DOMContentLoaded", function () {
                 body: JSON.stringify(data)
             });
 
+
+            console.log("HTTP STATUS:", response.status);
+
+
             const responseData = await response.json();
 
-            console.log("Server response:", responseData);
 
-            // Hide loading
-            if (loading) {
-                loading.style.display = "none";
-            }
+            console.log("SERVER RESPONSE:", responseData);
 
-            // Show result
-            if (result) {
-                result.style.display = "block";
-            }
 
-            // Server error
+            loading.style.display = "none";
+
+            result.style.display = "block";
+
+
             if (!response.ok || !responseData.success) {
 
                 document.getElementById("resultTitle").innerText =
                     "Prediction Error";
 
                 document.getElementById("resultText").innerText =
-                    responseData.error ||
-                    "Something went wrong while making the prediction.";
+                    responseData.error || "Prediction failed.";
 
                 return;
             }
 
-            // Successful prediction
+
             document.getElementById("resultTitle").innerText =
                 responseData.result;
+
 
             document.getElementById("resultText").innerText =
                 "Prediction completed successfully.";
 
+
             document.getElementById("depressionProbability").innerText =
-                responseData.depression_probability + "%";
+                responseData.depression_probability;
+
 
             document.getElementById("noDepressionProbability").innerText =
-                responseData.no_depression_probability + "%";
+                responseData.no_depression_probability;
 
-        } catch (error) {
 
-            console.error("Prediction error:", error);
+        }
 
-            if (loading) {
-                loading.style.display = "none";
-            }
+        catch (error) {
 
-            if (result) {
-                result.style.display = "block";
-            }
+            console.error("PREDICTION ERROR:", error);
+
+
+            loading.style.display = "none";
+
+            result.style.display = "block";
+
 
             document.getElementById("resultTitle").innerText =
                 "Connection Error";
 
+
             document.getElementById("resultText").innerText =
-                "Could not connect to the prediction server.";
+                error.message;
         }
 
     });
