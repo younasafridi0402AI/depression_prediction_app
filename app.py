@@ -235,4 +235,4 @@ async def health():
         "status": "healthy",
         "model_loaded": model is not None
     }
-```
+
